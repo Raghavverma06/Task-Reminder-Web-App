@@ -18,20 +18,23 @@
       <div class="sidebar-header">
         <div class="logo">
           <div class="logo-icon"><i class="ph ph-command"></i></div>
-          <span>Acme Corp</span>
+          <span class="sidebar-text">Issue Tracker</span>
         </div>
+        <button id="sidebar-toggle-btn" class="sidebar-toggler" title="Toggle Sidebar">
+          <i class="ph ph-caret-left" id="toggle-icon"></i>
+        </button>
       </div>
       <nav class="sidebar-nav">
-        <a href="#" class="nav-item tab-target" data-tab="dashboard"><i class="ph ph-house"></i> Dashboard</a>
-        <a href="#" class="nav-item tab-target active" data-tab="issues"><i class="ph ph-kanban"></i> Issues</a>
-        <a href="#" class="nav-item tab-target" data-tab="projects"><i class="ph ph-folder"></i> Projects</a>
-        <a href="#" class="nav-item tab-target" data-tab="team"><i class="ph ph-users"></i> Team</a>
+        <a href="#" class="nav-item tab-target" data-tab="dashboard"><i class="ph ph-house"></i> <span class="sidebar-text">Dashboard</span></a>
+        <a href="#" class="nav-item tab-target active" data-tab="issues"><i class="ph ph-kanban"></i> <span class="sidebar-text">Issues</span></a>
+        <a href="#" class="nav-item tab-target" data-tab="projects"><i class="ph ph-folder"></i> <span class="sidebar-text">Projects</span></a>
+        <a href="#" class="nav-item tab-target" data-tab="team"><i class="ph ph-users"></i> <span class="sidebar-text">Team</span></a>
       </nav>
       <div class="sidebar-footer">
-        <a href="#" class="nav-item tab-target" data-tab="settings"><i class="ph ph-gear"></i> Settings</a>
+        <a href="#" class="nav-item tab-target" data-tab="settings"><i class="ph ph-gear"></i> <span class="sidebar-text">Settings</span></a>
         <!-- Theme Toggle Button -->
         <button id="theme-toggle" class="nav-item" style="background:transparent; border:none; width:100%; text-align:left; cursor:pointer;">
-          <i class="ph ph-sun" id="theme-icon"></i> <span id="theme-text">Light Mode</span>
+          <i class="ph ph-sun" id="theme-icon-display"></i> <span id="theme-text" class="sidebar-text">Light Mode</span>
         </button>
       </div>
     </aside>
@@ -42,15 +45,18 @@
       <!-- Top header -->
       <header class="app-header">
         <div class="header-left">
+          <button id="mobile-menu-btn" class="icon-btn-large mobile-only"><i class="ph ph-list"></i></button>
           <h1 class="page-title" id="page-title-display">Issue Tracker</h1>
-          <div class="search-bar">
+          <div class="search-bar desktop-only">
             <i class="ph ph-magnifying-glass"></i>
             <input type="text" id="global-search" placeholder="Search issues, projects...">
           </div>
         </div>
         <div class="header-right">
-          <button id="add-issue-btn" class="btn primary-btn"><i class="ph ph-plus"></i> New Issue</button>
-          <img src="https://i.pravatar.cc/100?img=11" alt="User" class="user-avatar" title="Your Profile" style="cursor:pointer">
+          <button id="add-issue-btn" class="btn primary-btn"><i class="ph ph-plus"></i> <span class="desktop-only">New Issue</span></button>
+          <div class="user-profile-trigger">
+            <div class="unknown-user-icon"><i class="ph ph-user-circle"></i></div>
+          </div>
         </div>
       </header>
 
@@ -67,11 +73,12 @@
             <div class="filter-group">
               <button class="filter-btn with-icon action-btn" data-action="filter"><i class="ph ph-funnel"></i> Filter</button>
               <button class="filter-btn with-icon action-btn" data-action="sort"><i class="ph ph-sort-ascending"></i> Sort</button>
+              <button class="filter-btn with-icon ai-btn" id="ai-smart-sort"><i class="ph ph-magic-wand"></i> AI Sort</button>
             </div>
           </div>
 
           <!-- Kanban Board -->
-          <main class="board-container">
+          <main class="board-container" id="board-view">
             
             <!-- To Do Column -->
             <div class="column" data-status="todo">
@@ -127,34 +134,177 @@
             </div>
 
           </main>
+
+          <!-- List View -->
+          <main class="list-container hidden" id="list-view">
+            <table class="issue-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Title</th>
+                  <th>Type</th>
+                  <th>Priority</th>
+                  <th>Status</th>
+                  <th>Assignee</th>
+                </tr>
+              </thead>
+              <tbody id="list-table-body">
+                <!-- Row content goes here -->
+              </tbody>
+            </table>
+          </main>
         </div>
 
-        <!-- Placeholder for other tabs -->
-        <div id="view-dashboard" class="view-panel">
-          <div style="padding: 3rem; text-align: center; color: var(--text-muted);">
-            <h2>Dashboard</h2>
-            <p>Interactive dashboard visualizations would go here.</p>
+        <!-- Dashboard Tab -->
+        <div id="view-dashboard" class="view-panel relative">
+          <canvas id="dashboard-canvas"></canvas>
+          <div class="dashboard-content">
+            <h2 class="section-heading">Overview</h2>
+            <div class="stats-grid">
+              <div class="stat-card">
+                <div class="stat-icon"><i class="ph ph-target"></i></div>
+                <div class="stat-info">
+                  <h3>Active Issues</h3>
+                  <div class="stat-value">24</div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon" style="background: rgba(46, 160, 67, 0.2); color: var(--status-completed)"><i class="ph ph-check-circle"></i></div>
+                <div class="stat-info">
+                  <h3>Completed This Week</h3>
+                  <div class="stat-value">12</div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon" style="background: rgba(163, 113, 247, 0.2); color: var(--status-resolved)"><i class="ph ph-lightning"></i></div>
+                <div class="stat-info">
+                  <h3>Team Velocity</h3>
+                  <div class="stat-value">84%</div>
+                </div>
+              </div>
+            </div>
+            <div class="chart-placeholder">
+              <h3>Weekly Activity</h3>
+              <div class="fake-chart">
+                <div class="bar" style="height: 40%"></div>
+                <div class="bar" style="height: 80%"></div>
+                <div class="bar" style="height: 50%"></div>
+                <div class="bar" style="height: 90%"></div>
+                <div class="bar" style="height: 30%"></div>
+                <div class="bar" style="height: 60%"></div>
+                <div class="bar" style="height: 95%"></div>
+              </div>
+            </div>
           </div>
         </div>
         
+        <!-- Projects Tab -->
         <div id="view-projects" class="view-panel">
-          <div style="padding: 3rem; text-align: center; color: var(--text-muted);">
-            <h2>Projects</h2>
-            <p>List of all your active projects.</p>
+          <div class="page-padding">
+            <h2 class="section-heading">Active Projects</h2>
+            <div class="projects-grid">
+              <div class="project-card-ui">
+                <div class="project-header">
+                  <h3>Project Alpha</h3>
+                  <i class="ph ph-dots-three"></i>
+                </div>
+                <p>Website Redesign & Migration</p>
+                <div class="progress-container">
+                  <div class="progress-bar" style="width: 75%"></div>
+                </div>
+                <div class="project-footer">
+                  <span class="due-date"><i class="ph ph-calendar"></i> Oct 24</span>
+                  <div class="avatars">
+                    <img src="https://i.pravatar.cc/100?img=1" alt="user">
+                    <img src="https://i.pravatar.cc/100?img=2" alt="user">
+                  </div>
+                </div>
+              </div>
+              <div class="project-card-ui">
+                <div class="project-header">
+                  <h3>Project Beta</h3>
+                  <i class="ph ph-dots-three"></i>
+                </div>
+                <p>Mobile App Phase 2</p>
+                <div class="progress-container">
+                  <div class="progress-bar" style="width: 32%; background: var(--status-in-progress)"></div>
+                </div>
+                <div class="project-footer">
+                  <span class="due-date"><i class="ph ph-calendar"></i> Nov 02</span>
+                  <div class="avatars">
+                    <img src="https://i.pravatar.cc/100?img=3" alt="user">
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
+        <!-- Team Tab -->
         <div id="view-team" class="view-panel">
-          <div style="padding: 3rem; text-align: center; color: var(--text-muted);">
-            <h2>Team</h2>
-            <p>Member directories and access controls.</p>
+          <div class="page-padding">
+            <div class="team-header-action">
+              <h2 class="section-heading">Team Roster</h2>
+              <button class="btn primary-btn"><i class="ph ph-user-plus"></i> Invite Member</button>
+            </div>
+            <div class="team-grid">
+              
+              <div class="team-member-card">
+                <label class="avatar-upload" title="Upload Picture">
+                  <img src="https://i.pravatar.cc/100?img=11" id="avatar-img-1" alt="Raghav">
+                  <input type="file" accept="image/*" hidden onchange="handleAvatarUpload(this, 'avatar-img-1')">
+                  <div class="upload-overlay"><i class="ph ph-camera"></i></div>
+                </label>
+                <div class="member-info">
+                  <h3>Raghav Verma</h3>
+                  <span class="role">Frontend | Backend Engineer</span>
+                </div>
+                <span class="status online"></span>
+              </div>
+              
+              <div class="team-member-card">
+                <label class="avatar-upload" title="Upload Picture">
+                  <img src="https://i.pravatar.cc/100?img=12" id="avatar-img-2" alt="Hitesh">
+                  <input type="file" accept="image/*" hidden onchange="handleAvatarUpload(this, 'avatar-img-2')">
+                  <div class="upload-overlay"><i class="ph ph-camera"></i></div>
+                </label>
+                <div class="member-info">
+                  <h3>Hitesh Sheoran</h3>
+                  <span class="role">UI/UX Engineer</span>
+                </div>
+                <span class="status online"></span>
+              </div>
+              
+            </div>
           </div>
         </div>
         
+        <!-- Settings Tab -->
         <div id="view-settings" class="view-panel">
-          <div style="padding: 3rem; text-align: center; color: var(--text-muted);">
-            <h2>Settings</h2>
-            <p>Account and workspace configuration.</p>
+          <div class="page-padding">
+             <h2 class="section-heading">Workspace Settings</h2>
+             <div class="settings-container">
+               <div class="setting-item">
+                 <div class="setting-text">
+                   <h3>Email Notifications</h3>
+                   <p>Receive an email when you are mentioned.</p>
+                 </div>
+                 <label class="toggle-switch">
+                   <input type="checkbox" checked>
+                   <span class="slider"></span>
+                 </label>
+               </div>
+               <div class="setting-item">
+                 <div class="setting-text">
+                   <h3>Auto-Assign Issues</h3>
+                   <p>Automatically assign created issues to yourself.</p>
+                 </div>
+                 <label class="toggle-switch">
+                   <input type="checkbox">
+                   <span class="slider"></span>
+                 </label>
+               </div>
+             </div>
           </div>
         </div>
 
@@ -170,8 +320,9 @@
         <button id="close-modal-btn" class="icon-btn-large"><i class="ph ph-x"></i></button>
       </header>
       <form id="issue-form">
-        <div class="form-group">
+        <div class="form-group ai-input-group">
           <input type="text" id="issue-title" class="input-large" name="title" required placeholder="Issue title..." autocomplete="off">
+          <button type="button" id="ai-magic-wand" class="ai-icon-btn" title="AI Auto-fill"><i class="ph ph-sparkle"></i></button>
         </div>
         <div class="form-group">
           <textarea id="issue-desc" class="input-body" name="description" rows="4" placeholder="Add description..." required></textarea>
@@ -202,8 +353,31 @@
     </div>
   </div>
 
+  <!-- Confetti Canvas -->
+  <canvas id="confetti-canvas"></canvas>
+
   <!-- Action Notification Toast (For fake interactivity) -->
   <div id="toast" class="toast hidden">Action completed successfully</div>
+
+  <!-- Floating AI Assistant -->
+  <div id="ai-assistant" class="ai-assistant-container">
+    <div id="ai-panel" class="ai-panel hidden">
+      <div class="ai-panel-header">
+        <i class="ph ph-robot"></i>
+        <span>AI Insights</span>
+        <button id="close-ai-panel" class="icon-btn"><i class="ph ph-x"></i></button>
+      </div>
+      <div class="ai-panel-body" id="ai-chat-body">
+        <p class="ai-bubble">Hello! Click below to analyze your board for smart insights.</p>
+      </div>
+      <div class="ai-panel-footer">
+        <button id="ai-analyze-btn" class="ai-action-btn">Analyze Board</button>
+      </div>
+    </div>
+    <button id="ai-fab" class="ai-fab" title="AI Assistant">
+      <i class="ph ph-sparkle"></i>
+    </button>
+  </div>
 
   <script src="app.js"></script>
 </body>
